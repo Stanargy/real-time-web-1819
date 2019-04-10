@@ -4,10 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node gulp/minify.js && nodemon index.js",
-    "smalldev": "nodemon index.js",
-    "build": "node index.js",
     "start": "node MyProject/index.js"
   },
   "author": "Stan Ooms",
@@ -41,6 +37,7 @@
     "run-sequence": "^2.2.1"
   },
   "engines": {
-    "node": ">=0.12.0"
+    "node": ">=0.12.0",
+    "npm": "1.2.30"
   }
 }
