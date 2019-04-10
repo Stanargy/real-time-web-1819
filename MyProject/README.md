@@ -24,7 +24,7 @@ The following images represent the audits of the original site, followed by the 
 7. [To-do](#7-To-do)
 
 ## 1. Live Demo
-At this moment the live demo is unavailable.
+The live demo is unavailable at this moment.
 
 ## 2. Install
 To install this project clone the repository to the local storage on your device. Make sure node.js is installed and open a CLI. Go to the folder which locates the cloned repository and use the command: "npm install". To start a local development service use the command: "npm run dev".
