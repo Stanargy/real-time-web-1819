@@ -31,6 +31,7 @@ passport.use(
     }, (accessToken, refreshToken, profile, done) => {
         // check if user allready exists in our db
        // console.log(profile);
+       console.log(profile)
         User.findOne({googleid: profile.id}).then((currentUser) => {
             if(currentUser){
                 //console.log('user is: ', currentUser);
@@ -47,7 +48,8 @@ passport.use(
             console.log('new user Created:' + newUser);
             //console.log(profile)
             done(null, newUser);
-            
+            let thisUser = profile
+           module.exports = thisUser
                 }); 
             }
         });

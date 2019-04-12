@@ -16,6 +16,7 @@ multi user chatting
 3. [Features](#3-Features)
 4. [DATA](#4-DATA)
 5. [To-do](#5-To-do)
+6. [Notes](#6-Notes)
 
 ## 1. Live Demo
 The live demo is unavailable at this moment. See to do
@@ -83,3 +84,6 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
     looks like heroku by default looks for a /app folder which I don't have
 - [ ] render stored messages to DOM
 - [ ] multi user functionality
+
+## 6. Notes
+- at the passport-setup file the user information is retrieved as it should. Yet, this information is not rendered to the dom anymore. 

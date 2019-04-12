@@ -17,6 +17,8 @@
 
     let bodyParser = require('body-parser')
 
+    let thisUser = require('./config/passport-setup')
+
     // connect to mongodb
     mongoose.connect(keys.mongodb.dbURI, {
         useNewUrlParser: true
@@ -78,15 +80,17 @@
         socket.on('chat message', function (msg) {
             console.log('message: ' + msg);
             console.log('db opened')
+
                 if(msg!=''){   
                     let nMessage = new Message({
-                        user: 'testuser',
+                        //user: newUs,
                         body: msg,
                         date: new Date()
+                        
                     });
 
                      nMessage.save()
-                    console.log('new doc saved')   
+                    console.log('new message saved in db')   
                     
                    
                 }
