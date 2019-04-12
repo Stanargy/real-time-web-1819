@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node MyProject/index.js"
+    "start": "node index.js"
   },
   "author": "Stan Ooms",
   "license": "ISC",
