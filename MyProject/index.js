@@ -8,6 +8,7 @@
     const http = require('http').Server(app)
     let io = require('socket.io')(http)
 
+    let allMessages = [{}];
 
     const keys = require('./config/keys')
     const mongoose = require('mongoose')
@@ -31,6 +32,9 @@
 
     let db = mongoose.connection;
     db.on('error', console.error.bind(console, 'connection error:'));
+
+    // find all messages
+    
 
     // setup template engine
     app.set('view engine', 'ejs');
@@ -91,7 +95,7 @@
 
                      nMessage.save()
                     console.log('new message saved in db')   
-                    
+                
                    
                 }
 

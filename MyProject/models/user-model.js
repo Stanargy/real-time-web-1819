@@ -9,14 +9,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('user', userSchema);
 
-const messageSchema = new mongoose.Schema({
-    user: String,
-    body: String,
-    date: String
-})
-const Message = mongoose.model('message', messageSchema)
-
-module.exports = Message, User;
 
 
   

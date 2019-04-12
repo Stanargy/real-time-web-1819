@@ -3,6 +3,8 @@ const router = express.Router();
 const passport = require('passport')
 const bodyParser = require('body-parser')
 let newUser = require('../config/passport-setup');
+const mongoose = require('mongoose')
+let Message = require('../models/user-model')
 
 const url = require('url')
 const authCheck = (req, res, next) =>{
@@ -59,10 +61,13 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
     //  console.log(res.user.username + "-----" + res.user.googleid)
    //console.log(res)
 
-
+   let allMessages = Message.find({}, (res) =>{
+       console.log(res)
+   })
     res.redirect(url.format({
         pathname:"../login",
         query: req.res.user
+
     }));
     // res.redirect('./views/pages/profile/');
 });
