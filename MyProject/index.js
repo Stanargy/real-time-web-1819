@@ -6,6 +6,10 @@
     const app = express()
     const http = require('http').Server(app)
     let io = require('socket.io')(http)
+    // use port 3000 unless there exists a preconfigured port
+    var port = process.env.port || 3000;
+    
+    const PORT = 3000;
     
     let allMessages = [{}];
     
@@ -19,8 +23,8 @@
     
     let thisUser = require('./config/passport-setup')
     
-//     // get  DB schema's
-//     //const userSchema = require('./models/user-model')
+    //     // get  DB schema's
+    //     //const userSchema = require('./models/user-model')
     const messageSchema = require('./models/message-model')
 
 //     // set DB models
@@ -154,8 +158,11 @@
     
 
 
-    // listen to port
-    http.listen(3000, function () {
+    // listen to port`
+
+
+
+    http.listen(port, function () {
         console.log('PORT 3000 | http Server Started')
     })
 
