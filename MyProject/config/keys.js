@@ -7,6 +7,7 @@ module.exports = {
     mongodb:{
         // dbURI: 'http://api.mongolab.com/api/1/databases/chat_app/collections/'
         dbURI:'mongodb://admin:admin123@ds137605.mlab.com:37605/chat_app',
+        dbURI2:'mongodb://admin:admin123@ds137605.mlab.com:37605/chat_app/collections/messages',
         apiKey: 'hfUCcfvAcZeKoGPCd0TTy5K5ZfQk_UMP'
     },
     session: {

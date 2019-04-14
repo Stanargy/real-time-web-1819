@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "node gulp/minify.js && nodemon index.js"
   },
   "author": "Stan Ooms",
   "license": "ISC",

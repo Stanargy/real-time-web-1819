@@ -7,9 +7,17 @@ const userSchema = new mongoose.Schema({
     thumbnail: String
 });
 
-const User = mongoose.model('user', userSchema);
+
+const User = mongoose.model('User', userSchema, 'users');
+module.exports = User;
 
 
+
+
+
+// module.exports = userSchema 
+// console.log(User)
+//console.log(userSchema)
 
   
 // let message1 = new Schema({ user:'example', body: 'bodyExample', email: 'example@foo.com' })

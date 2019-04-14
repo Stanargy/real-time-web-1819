@@ -61,9 +61,12 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
     //  console.log(res.user.username + "-----" + res.user.googleid)
    //console.log(res)
 
-   let allMessages = Message.find({}, (res) =>{
-       console.log(res)
-   })
+//    let allMessages = Message.find({}, (res) =>{
+//        console.log(res)
+//    })
+
+
+
     res.redirect(url.format({
         pathname:"../login",
         query: req.res.user
@@ -71,6 +74,11 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
     }));
     // res.redirect('./views/pages/profile/');
 });
+
+
+
+// callback url van google komt niet van localhost maar van heroku !!!!!!
+
 
 
 
