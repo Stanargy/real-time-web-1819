@@ -3,10 +3,9 @@
 
 let socket = io()
 
+
 // input & output fields for messages
-let myForm = document.querySelector('#form')
-let myMessage = document.querySelector('#m')
-let myMessages = document.querySelector('#messages')
+
 
 // interaction updates
 let alert = document.querySelector('#alert')
@@ -17,12 +16,7 @@ let alertP = document.createElement('P')
 let thisUsername = document.querySelector('#thisUsername').innerText;
 
 
-(function(socket){
-socket.emit('dataAPI', function(){
-  console.log('API called from client')
-})
-}())
-  
+
 // // check for submitting of the form
 // myForm.addEventListener('submit', function (e) {
 //   e.preventDefault(); // prevents reloading of the page on submit
@@ -56,16 +50,56 @@ socket.emit('dataAPI', function(){
 //   });
 // });
 
+askData(socket)
+
+function askData(socket){
+
+  setInterval(()=>{
+    socket.emit('new data request from user')
+    console.log('before ')
+    // on message do this
+    socket.on('newData', function (data) {
+     // console.log(data)
+
+      console.log('data above')
+  
+      
+      console.log('message was send')
+      templateData(data)
+    })
 
 
-// on message do this
-socket.on('new data request from user', function (msg) {
-  console.log(msg)
-//////////////////////////////////////////////////////
-// add graph
-///////////////////////////////////////////////////////////
+  }, 3000)
+}
 
-  console.log('message was send')
+function templateData(data){
+  console.log(data)
+  let div = document.querySelector('#dataTable')
+  div.innerHTML = '';
+
+  data.forEach((coin) =>{
+    let li = document.createElement('li')
+    let p1 = document.createElement('p')
+    let p2= document.createElement('p')
+    let p3 = document.createElement('p')
+    p1.innerHTML =  coin.fullname 
+    p2.innerHTML =  'From: ' + coin.currencyFrom + 'To: ' + coin.currencyTo  
+    p3.innerHTML =  coin.supply
+    li.append(p1, p2, p3 )
+    div.append(li)
+
+    
+    
+  })
+}
+
+
+
+  //////////////////////////////////////////////////////
+  // add graph
+  ///////////////////////////////////////////////////////////
+
+
+
+
   //-------------------------------------------------------------Update DOM
-
-})
