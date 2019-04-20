@@ -1,0 +1,22 @@
+
+<header
+    <h2>Welcome To the chat</h2> 
+    <button type=""><a href="/logout">Logout</a></button>
+    <img id="profile_picture" src="<%= user.thumbnail %>" alt="Profile picture">
+    <h1 id="thisUsername"><%= user.username %></h1>
+</header>
+    
+<section>
+    <ul id="messages"></ul>
+    <div id="alert"></div>
+    <div id="alert2"></div>
+</section>
+
+<section>
+    <form action="" id="form">
+        <input id="m" autocomplete="off" />
+        <input type="submit" name="" value="SEND"/>
+    </form>
+</section>`
+
+<% console.log(user.username + ' in DOM')%>
