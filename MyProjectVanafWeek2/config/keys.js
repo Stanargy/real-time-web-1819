@@ -28,5 +28,21 @@ module.exports = {
     // get toplist by volume in EUR
     api2:{
         apiURL:'https://min-api.cryptocompare.com/data/top/totalvol?limit=10&tsym=EUR'
+    },
+    // get symbol price
+
+    api3:{
+        apiURL1:'https://min-api.cryptocompare.com/data/price?fsym=',
+        apiURL2:'&tsyms=EUR'
+    },
+
+// get all coins
+    api4:{
+        apiURL1:'https://min-api.cryptocompare.com/data/all/coinlist'
     }
 };
+
+
+// &api_key=b28e34db12fd4c6c4c9486212b882a68dda9171e00dc18e82038ce266177ff85
+
+// https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=USD,EUR

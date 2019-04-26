@@ -6,6 +6,7 @@ let newUser = require('../config/passport-setup');
 const mongoose = require('mongoose')
 let Message = require('../models/user-model')
 
+
 const url = require('url')
 const authCheck = (req, res, next) =>{
     if(!req.user){

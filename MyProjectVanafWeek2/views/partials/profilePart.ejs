@@ -1,19 +1,40 @@
 
-<header
-    <h2>Welcome To the chat</h2> 
+
+
+<h2>CryptoCompare</h2> 
+<nav>
+<h1 id="thisUsername"><%= user.username%></h1>
     <button type=""><a href="/logout">Logout</a></button>
     <img id="profile_picture" src="<%= user.thumbnail %>" alt="Profile picture">
-    <h1 id="thisUsername"><%= user.username %></h1>
-</header>
     
-<section>
-    <div id="alert"></div>
-    <div id="alert2"></div>
-</section>
+</nav>
 
-<section>
-    <div id="dataTable"></div>
-  
-</section>`
 
+<div id="allCoins">
+    <input type="text" name="searchField" value="" id="searchField">
+    <div id="queryUpdate">
+        
+    </div>
+
+    <div id="favoriteSection">
+    <h1>Favourites:</h1>
+        
+    </div>
+</div>
+
+<div id="wrapper">
+ 
+            
+    <div id="logo-img">
+        
+    </div>
+        </div>
+            
+    </section>
+    
+
+
+
+    
+<!-- [ ] Add Complete datatable layout -->
 <% console.log(user.username + ' in DOM')%>

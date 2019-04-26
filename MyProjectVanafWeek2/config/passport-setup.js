@@ -46,7 +46,8 @@ passport.use(
                         username: profile.displayName,
                         googleid: profile.id,
                         gender: profile.gender,
-                        thumbnail: profile._json.image.url
+                        thumbnail: profile._json.image.url,
+                        favorites: ['']
                     })
 
                     // select the right collection and save the user in the database

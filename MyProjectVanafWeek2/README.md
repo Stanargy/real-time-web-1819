@@ -1,86 +1,212 @@
 # Project - 2
 
 ## Summary
-Background:
 
+Background:
+- This project features a real-time-web example that focusses on retrieving cryptocurrencies from an external API and then querying that API again on interval retrieve new data relevant for the cryptocurrencies selected by the user.
 
 Core Features of this project:
 
-multi user chatting
-- Storing messages in DB.
-- Storing user information in DB.
+- Store User data
+- Update the user in the database with their selected favourite cryptocurrencies
+- Render price changes regarding those cryptocurrencies  
 
 ## Table of contents
+
 1. [Live demo](#1-Live-demo)
 2. [Install](#2-Install)
 3. [Features](#3-Features)
 4. [DATA](#4-DATA)
+5. [API](#5-API)
 5. [To-do](#5-To-do)
-6. [Notes](#6-Notes)
 
 ## 1. Live Demo
+
 The live demo is unavailable at this moment. See to do
 
 ## 2. Install
+
 To install this project clone the repository to the local storage on your device. Make sure node.js is installed and open a CLI. Go to the folder which locates the cloned repository and use the command: "npm install". To start a local development service use the command: "npm run dev".
 
 ## 3. Features
 
-- show 
-- login with google
-- data storage in db
 
-<details></details>
+- Login with google
+- Create a new user and store it to mongodb
+- Storage in mongodb
+- Add cryptocurrency to a list of favourites (&& update the User in the mongodb)
+- Show price changes for those favourites in real-time
+
+Data live cycle:
+<details>
+
+</details>
 
 ## 4. Data
-<details></details>
 
-Storing Messages:
+- Add to Favourites
+
+<details>
 ```js
-socket.on('chat message', function (msg) {
-            console.log('message: ' + msg);
-            console.log('db opened')
-                if(msg!=''){   
-                    let nMessage = new Message({
-                        user: 'testuser',
-                        body: msg,
-                        date: new Date()
-                    });
+socket.on('addToFavorite', (message) => {
+    console.log(message)
 
-                     nMessage.save()
-                    console.log('new doc saved')   
-                    
-                   
-                }
+            ///////////////////////////////////////////////////////get user, add favorites to favorite property
 
-            io.emit('chat message', msg)
-        });
+            // get user
+            let getUser = User.findOne({
+                username: `${message.thisUser}`
+            }, (error, documents) => {
+
+                let thisArray = [];
+                // add new favorite coin ID to array: thisFavorites
+                thisArray.push(message.coinID)
+                // for each favorite that was already existing add to Array: thisFavorite
+                documents.favorites.forEach(document => {
+                    thisArray.push(document)
+                })
+
+                // remove the "" (default) value in the array
+                let thisFavorites = thisArray.filter((value) => {
+                    if (value != "")
+                        return value
+                })
+
+                // remove duplicates
+                thisFavorites = [...new Set(thisFavorites)]
+                console.log(thisFavorites.length)
+                // add new favorites array (thisFavorites) to the user property: favorites
+                User.updateOne({
+                    username: `${message.thisUser}`
+                }, {
+                    $set: {
+                        favorites: thisFavorites
+                    }
+                    //favorites: [thisFavorites]
+                }, () => {
+                    console.log('succesfully updated a profile with a new coinID')
+                })
+            })
+        })
+    ```
+
+</details>
+
+- new data request from the user:
+<details>
+
+```js
+ // look for this users favourites
+        socket.on('requestFavorites', (thisUser) => {
+            User.findOne({
+                username: `${thisUser}`
+            }, (error, documents) => {
+                console.log('requestFavorites')
+                console.log('documents')
+                //console.log(documents)
+
+
+
+                let thisFavorites = documents.favorites
+                thisFavorites.forEach(favorite => {
+
+
+
+                    // find correct symbol
+                    console.log('favourite individual coin:')
+                    favorite = favorite.toString()
+
+                    console.log(favorite)
+                    console.log(typeof (favorite))
+                    // search through allCoins to find the one that has id matching the id from the user
+
+                    thisAllCoins.findById(favorite, (error, document) => {
+
+                        // send fullCoin to Client
+                        socket.emit('newFavorite', document)
+                        console.log(document)
+                        console.log('-----------------------------------')
+
+                        let thisSymbol = document.symbol
+                        console.log(thisSymbol)
+
+                        let thisUrl = keys.api3.apiURL1 + thisSymbol + keys.api3.apiURL2 + keys.apiGraphData.apiPrefix
+                        console.log(thisUrl)
+                        setPrices(thisUrl, document.symbol)
+
 ```
+</details>
 
-Logging in with Google:
+- Retrieve new Price Data
+<details>
+
 ```js
+    async function setPrices(url, symbol) {
+
+                            setInterval(() => {
+
+                                thisRequest(url, symbol)
+
+                                function thisRequest(url, symbol) {
+                                    return new Promise((resolve, reject) => {
+                                        // get the data
+                                        request(url, (error, response, body) => {
+                                            // parse the data
+                                            body = JSON.parse(body)
+
+                                            resolve(body)
+                                        })
+                                    }).then((res) => {
+
+                                        thisAllCoins.updateOne({
+                                            Symbol: symbol
+                                        }, {
+                                            $set: {
+                                                price: res
+                                            }
+
+                                        }, () => {
+                                            console.log(`succesfully updated price in DB`)
+                                        })
+                                        socket.emit('priceSet', res)
+
+
+                                    })
+                                }
+                            }, 2000)
+                        }
+```
+</details>
+
+- Logging in with Google:
+
+<details>
+
+```js
+
 // auth with google+
 
 router.get('/google', passport.authenticate('google', {
 
     scope: ['profile']
-    
+
 }));
 // callback route for google to redirect to
 // hand control to passport to use code to grab profile info
 router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
-    //  console.log(res.user.username + "-----" + res.user.googleid)
-   console.log(newUser)
-    //console.log(res)
-    //res.send(req.user);
-    res.redirect(url.format({
-        pathname:"../login",
-        query: req.res.user
-    }));
-    // res.redirect('./views/pages/profile/');
+// console.log(res.user.username + "-----" + res.user.googleid)
+console.log(newUser)
+//console.log(res)
+//res.send(req.user);
+res.redirect(url.format({
+pathname:"../login",
+query: req.res.user
+}));
+// res.redirect('./views/pages/profile/');
 });
 
 ```
+</details>
 ## 5. To-do
 <details>
 </details>
@@ -96,14 +222,13 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
 
 - [ ] Get All Known Data: From database
 - [ ] Get New Data From API, update db
-- [ ]  
+- [ ]
 
 #### _________________________________________________
-[ ] Add New server side async js Function that repeats itself every 2 seconds:
-- [ ] Add API data request to api.js
-- [ ] Configure data if needed
-- [ ] Compare latest 5 objects of old data (in db collection) to new data (from api request) if data is new, create new broadcast message. 
-- [ ] add message to collection - broadcast update
+[X] Add New server side async js Function that repeats itself every 2 seconds:
+- [X] Add API data request to api.js
+- [X] Configure data if needed
+- [X] Send a message with the new data to the client
 
 #### _________________________________________________
 
@@ -111,13 +236,15 @@ router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
 #### Update Client Side:
 [ ] Add client side async js function that repeats itself every 2 seconds:
 
- - [ ] Catch Broadcast From server
- - [ ] Update DOM when new data is received 
+ - [X] Catch Message From server
+ - [X] Update DOM when new data is received
 
-[ ] Create Graph that displays the JSON data from the API. SNIPPET: 
+- [ ] Create Graph that displays the JSON data from the API. SNIPPET:
 
-```js
-<!DOCTYPE HTML>
+<details>
+
+```html
+
 <html>
 <head>
 <script>
@@ -167,7 +294,16 @@ $.getJSON("https://canvasjs.com/data/gallery/javascript/daily-sales-data.json", 
 
 https://canvasjs.com/javascript-charts/json-data-api-ajax-chart/
 
-## 6. Notes
-<details>
-- 
+```
 </details>
+
+## 6. API
+
+
+- To create this project the Cryptocompare API has been used:
+https://min-api.cryptocompare.com/
+<details>
+
+
+</details>
+

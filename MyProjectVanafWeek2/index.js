@@ -13,8 +13,9 @@ let io = require('socket.io')(http)
 // Declare Socket Function
 const socketFunction = require('./source/socketio.js')
 
+const getPriceFunction = require('./source/getPrice.js')
 
-
+const getAllCoins = require('./source/getAllCoins.js')
 
 
 
@@ -37,22 +38,19 @@ const https = require("https")
 // console.log(mongoose.model.toString())
 let bodyParser = require('body-parser')
 
-//     // get  DB schema's
+///////////////////////////////////////////////////// get  DB schema's
 //     //const userSchema = require('./models/user-model')
 const messageSchema = require('./models/message-model')
-
-//     // set DB models
-//    // const User = mongoose.model('User', userSchema, 'users');
 const thisMessage = mongoose.model('message', messageSchema, 'messages')
 
-//     // export User to use in passport-setup
-//     //module.exports = User;
-//     let x = messageSchema
-//     console.log(x)
-//     console.log('---')
+// define model for coin price request
+const coinSchema = require('./models/coinPrice-model')
+const thisCoinPrice = mongoose.model('coinPrice', coinSchema, 'coinPrices')
 
 
-// module.exports = messageSchema, thisMessage
+// define model for allcoins data request
+const allCoinsSchema = require('./models/allCoins-model')
+const thisAllCoins = mongoose.model('allCoin', allCoinsSchema, 'allCoins')
 
 ////////// CONNECT TO MONGODB //////////
 mongoose.connect(keys.mongodb.dbURI, {
@@ -66,14 +64,17 @@ mongoose.connect(keys.mongodb.dbURI, {
 
 let db = mongoose.connection;
 
-//console.log(db)
-
+// if there is an error connecting to db - log it
 db.on('error', console.error.bind(console, 'connection error:'));
+////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 
-
+// log unexpected errors
+process.on('uncaughtException', function (err) {
+    console.log(err);
+});
 
 
 ////////// USE MIDDLEWARE //////////
@@ -81,8 +82,10 @@ db.on('error', console.error.bind(console, 'connection error:'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views/pages'));
 
+
 // access static file path
-app.use(express.static('public'));
+
+app.use(express.static(path.join(__dirname,"public")))
 
 // set cookies
 app.use(cookieSession({
@@ -107,27 +110,20 @@ app.use(cookieSession({
     keys: [keys.session.cookieKey]
 }));
 
-////////// USE router FILE TO HANDLE TE REQUESTS
+////////// USE router FILE TO HANDLE THE REQUESTS
 app.use('/', router)
 
 
 
 
 
+// DATA FUNCTIONS
+getAllCoins(thisAllCoins)
+socketFunction(io, thisMessage, thisAllCoins)
+////////////////////////////////////////
 
 
 
-
-
-
-
-
-
-
-// This export is used by the socket.io ./source file
-// module.exports = http
-//console.log(typeof(socketFunction))
-socketFunction(io, thisMessage)
 // socketio(http)
 // listen to port
 http.listen(PORT, function () {
@@ -137,73 +133,7 @@ http.listen(PORT, function () {
 
 
 
-
-
-
-
-
-
-
 ////////////////////////////////////////////////////
 ////////////// END OF USED CODEC////////////////////
 //////////START OF COMMENT SECTION//////////////////
 ////////////////////////////////////////////////////
-
-// chat
-
-// let numUsers = 0;
-
-// io.on('connection', (socket) =>{
-//     let addedUser = false;
-
-//     // when the client emits a new message, this block listens and executes
-//     socket.on('new message', (data) =>{
-//         // tell the client to execute new message
-//         socket.broadcast.emit('new message', {
-//             username: socket.username,
-//             message: data
-//         });
-//     });
-
-//     // when the client emits 'add user', this listens and executes
-//     socket.on('add user', (username) =>{
-//         if (addedUser) return;
-
-//         // store username in socket session for this client
-//         socket.username = username;
-//         ++numUsers;
-//         addedUser = true;
-//         socket.emit('login', {
-//             numUsers: numUsers
-
-//         });
-//     });
-
-//     // when client starts typing we broadcast it to others
-//     socket.on('typing', ()=>{
-//         socket.broadcast.emit('typing', {
-//             username: socket.username
-//         });
-//     });
-
-//     // when client stops typing we broadcast it to the user
-//     socket.on('stop typing', () =>{
-//         socket.broadcast.emit('stop typing', {
-//             username: socket.username
-//         });
-//     });
-
-//     // whem the user disconnects.. perform this block of code:
-//     socket.on('disconnect', () =>{
-//         if (addedUser) {
-//             --numUsers;
-
-//             // echo globally that this client has left
-
-//             socket.breadcast.emit('user left', {
-//                 username: socket.username,
-//                 numUsers: numUsers
-//             });
-//         }
-//     });
-// });
