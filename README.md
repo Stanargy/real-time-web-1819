@@ -1,60 +1,309 @@
-# Real-Time Web @cmda-minor-web · 2018-2019
+# Project - 2
 
-During this course you will learn how to build a **meaningful** real-time application. You will learn techniques to setup an open connection between the client and the server. This will enable you to send data in real-time both ways, at the same time.
+## Summary
 
-## Goals
-- _Deal with real-time complexity_
-- _Handle real-time client-server interaction_
-- _Handle real-time data management_
-- _Handle multi-user support_
+Background:
+- This project features a real-time-web example that focusses on retrieving cryptocurrencies from an external API and then querying that API again on interval retrieve new data relevant for the cryptocurrencies selected by the user.
 
-[Rubric][rubric]
+Core Features of this project:
 
-## Curriculum
+- Store User data
+- Update the user in the database with their selected favourite cryptocurrencies
+- Render price changes regarding those cryptocurrencies  
 
-### Week 1 - Hello Server
+## Table of contents
 
-Goal: Build and deploy a unique barebone real-time app  
+1. [Live demo](#1-Live-demo)
+2. [Install](#2-Install)
+3. [Features](#3-Features)
+4. [DATA](#4-DATA)
+5. [API](#5-API)
+5. [To-do](#5-To-do)
 
-[Exercises](https://github.com/cmda-minor-web/real-time-web-1819/blob/master/week-1.md)    
-[Slides](https://docs.google.com/presentation/d/1EVsEFgBnG699nce058ss_PkVJROQXDp5wJJ-IRXvzTA/edit?usp=sharing)  
+## 1. Live Demo
+
+The live demo is unavailable at this moment. See to do
+
+## 2. Install
+
+To install this project clone the repository to the local storage on your device. Make sure node.js is installed and open a CLI. Go to the folder which locates the cloned repository and use the command: "npm install". To start a local development service use the command: "npm run dev".
+
+## 3. Features
 
 
-### Week 2 - Sharing is caring  
+- Login with google
+- Create a new user and store it to mongodb
+- Storage in mongodb
+- Add cryptocurrency to a list of favourites (&& update the User in the mongodb)
+- Show price changes for those favourites in real-time
 
-Goal: Store, manipulate and share data between server-client   
+Data live cycle:
+<details>
 
-[Exercises](https://github.com/cmda-minor-web/real-time-web-1819/blob/master/week-2.md)    
-[Slides](https://docs.google.com/presentation/d/1woKoY59D8Zcttna0FzfNjEtGtT8oXWi9b5LYlukRISM/edit?usp=sharing)
+</details>
+
+## 4. Data
+
+- Add to Favourites
+
+<details>
+```js
+socket.on('addToFavorite', (message) => {
+    console.log(message)
+
+            ///////////////////////////////////////////////////////get user, add favorites to favorite property
+
+            // get user
+            let getUser = User.findOne({
+                username: `${message.thisUser}`
+            }, (error, documents) => {
+
+                let thisArray = [];
+                // add new favorite coin ID to array: thisFavorites
+                thisArray.push(message.coinID)
+                // for each favorite that was already existing add to Array: thisFavorite
+                documents.favorites.forEach(document => {
+                    thisArray.push(document)
+                })
+
+                // remove the "" (default) value in the array
+                let thisFavorites = thisArray.filter((value) => {
+                    if (value != "")
+                        return value
+                })
+
+                // remove duplicates
+                thisFavorites = [...new Set(thisFavorites)]
+                console.log(thisFavorites.length)
+                // add new favorites array (thisFavorites) to the user property: favorites
+                User.updateOne({
+                    username: `${message.thisUser}`
+                }, {
+                    $set: {
+                        favorites: thisFavorites
+                    }
+                    //favorites: [thisFavorites]
+                }, () => {
+                    console.log('succesfully updated a profile with a new coinID')
+                })
+            })
+        })
+    ```
+
+</details>
+
+- new data request from the user:
+<details>
+
+```js
+ // look for this users favourites
+        socket.on('requestFavorites', (thisUser) => {
+            User.findOne({
+                username: `${thisUser}`
+            }, (error, documents) => {
+                console.log('requestFavorites')
+                console.log('documents')
+                //console.log(documents)
 
 
-### Week 3 - Let’s take this show on the road 
 
-Goal: Handle data sharing and multi-user support 
+                let thisFavorites = documents.favorites
+                thisFavorites.forEach(favorite => {
 
-[Exercises](https://github.com/cmda-minor-web/real-time-web-1819/blob/master/week-3.md)  
-[Slides](https://docs.google.com/presentation/d/1SHofRYg87bhdqhv7DQb_HZMbW7Iq1PtqxpdtZHMbMmk/edit?usp=sharing)
 
-> If you're seeing this message on a forked repo, it means one of our students hasn't changed the description yet 😈
 
-<!-- Add a link to your live demo in Github Pages 🌐-->
+                    // find correct symbol
+                    console.log('favourite individual coin:')
+                    favorite = favorite.toString()
 
-<!-- ☝️ replace this description with a description of your own work -->
+                    console.log(favorite)
+                    console.log(typeof (favorite))
+                    // search through allCoins to find the one that has id matching the id from the user
 
-<!-- Add a nice image here at the end of the week, showing off your shiny frontend 📸 -->
+                    thisAllCoins.findById(favorite, (error, document) => {
 
-<!-- Maybe a table of contents here? 📚 -->
+                        // send fullCoin to Client
+                        socket.emit('newFavorite', document)
+                        console.log(document)
+                        console.log('-----------------------------------')
 
-<!-- How about a section that describes how to install this project? 🤓 -->
+                        let thisSymbol = document.symbol
+                        console.log(thisSymbol)
 
-<!-- ...but how does one use this project? What are its features 🤔 -->
+                        let thisUrl = keys.api3.apiURL1 + thisSymbol + keys.api3.apiURL2 + keys.apiGraphData.apiPrefix
+                        console.log(thisUrl)
+                        setPrices(thisUrl, document.symbol)
 
-<!-- What external data source is featured in your project and what are its properties 🌠 -->
+```
+</details>
 
-<!-- This would be a good place for your data life cycle ♻️-->
+- Retrieve new Price Data
+<details>
 
-<!-- Maybe a checklist of done stuff and stuff still on your wishlist? ✅ -->
+```js
+    async function setPrices(url, symbol) {
 
-<!-- How about a license here? 📜 (or is it a licence?) 🤷 -->
+                            setInterval(() => {
 
-[rubric]: https://docs.google.com/spreadsheets/d/e/2PACX-1vSd1I4ma8R5mtVMyrbp6PA2qEInWiOialK9Fr2orD3afUBqOyvTg_JaQZ6-P4YGURI-eA7PoHT8TRge/pubhtml
+                                thisRequest(url, symbol)
+
+                                function thisRequest(url, symbol) {
+                                    return new Promise((resolve, reject) => {
+                                        // get the data
+                                        request(url, (error, response, body) => {
+                                            // parse the data
+                                            body = JSON.parse(body)
+
+                                            resolve(body)
+                                        })
+                                    }).then((res) => {
+
+                                        thisAllCoins.updateOne({
+                                            Symbol: symbol
+                                        }, {
+                                            $set: {
+                                                price: res
+                                            }
+
+                                        }, () => {
+                                            console.log(`succesfully updated price in DB`)
+                                        })
+                                        socket.emit('priceSet', res)
+
+
+                                    })
+                                }
+                            }, 2000)
+                        }
+```
+</details>
+
+- Logging in with Google:
+
+<details>
+
+```js
+
+// auth with google+
+
+router.get('/google', passport.authenticate('google', {
+
+    scope: ['profile']
+
+}));
+// callback route for google to redirect to
+// hand control to passport to use code to grab profile info
+router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
+// console.log(res.user.username + "-----" + res.user.googleid)
+console.log(newUser)
+//console.log(res)
+//res.send(req.user);
+res.redirect(url.format({
+pathname:"../login",
+query: req.res.user
+}));
+// res.redirect('./views/pages/profile/');
+});
+
+```
+</details>
+## 5. To-do
+<details>
+</details>
+[X] Setup directories
+
+#### _________________________________________________
+
+[ ] Change old mongoose message model to new one that matches the input from the api
+
+#### _________________________________________________
+
+[ ] Add new async function on server build:
+
+- [ ] Get All Known Data: From database
+- [ ] Get New Data From API, update db
+- [ ]
+
+#### _________________________________________________
+[X] Add New server side async js Function that repeats itself every 2 seconds:
+- [X] Add API data request to api.js
+- [X] Configure data if needed
+- [X] Send a message with the new data to the client
+
+#### _________________________________________________
+
+
+#### Update Client Side:
+[ ] Add client side async js function that repeats itself every 2 seconds:
+
+ - [X] Catch Message From server
+ - [X] Update DOM when new data is received
+
+- [ ] Create Graph that displays the JSON data from the API. SNIPPET:
+
+<details>
+
+```html
+
+<html>
+<head>
+<script>
+window.onload = function() {
+
+var dataPoints = [];
+
+var chart = new CanvasJS.Chart("chartContainer", {
+	animationEnabled: true,
+	theme: "light2",
+	title: {
+		text: "Daily Sales Data"
+	},
+	axisY: {
+		title: "Units",
+		titleFontSize: 24
+	},
+	data: [{
+		type: "column",
+		yValueFormatString: "#,### Units",
+		dataPoints: dataPoints
+	}]
+});
+
+function addData(data) {
+	for (var i = 0; i < data.length; i++) {
+		dataPoints.push({
+			x: new Date(data[i].date),
+			y: data[i].units
+		});
+	}
+	chart.render();
+
+}
+
+$.getJSON("https://canvasjs.com/data/gallery/javascript/daily-sales-data.json", addData);
+
+}
+</script>
+</head>
+<body>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+</body>
+</html>
+
+https://canvasjs.com/javascript-charts/json-data-api-ajax-chart/
+
+```
+</details>
+
+## 6. API
+
+
+- To create this project the Cryptocompare API has been used:
+https://min-api.cryptocompare.com/
+<details>
+
+
+</details>
+

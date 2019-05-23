@@ -1,36 +1,51 @@
+'use strict'
+// Setup App & express
+const path = require('path');
+const express = require('express');
+const router = require('./router/router')
+const app = express()
+const http = require('http').Server(app)
 
-    // declare constants
-    const path = require('path');
-    const express = require('express');
-    const router = require('./router/router')
-    const app = express()
-    const http = require('http').Server(app)
-    let io = require('socket.io')(http)
-    // use port 3000 unless there exists a preconfigured port
-    var port = process.env.port || 3000;
-    
-    const PORT = 3000;
-    
-    let allMessages = [{}];
-    
-    const keys = require('./config/keys')
-    const mongoose = require('mongoose')
-    const cookieSession = require('cookie-session');
-    const passport = require('passport');
-    const passportSetup = require('./config/passport-setup');
-    // console.log(mongoose.model.toString())
-    let bodyParser = require('body-parser')
-    
-    let thisUser = require('./config/passport-setup')
-    
-    //     // get  DB schema's
-    //     //const userSchema = require('./models/user-model')
-    const messageSchema = require('./models/message-model')
+// Declare socket api
+let io = require('socket.io')(http)
+
+
+// Declare Socket Function
+const socketFunction = require('./source/socketio.js')
+
+
+
+
+
+
+// use port 3000 unless there exists a preconfigured port
+var PORT = process.env.PORT || 3000;
+
+// Declare keys for api's
+const keys = require('./config/keys')
+
+// Declare database api
+const mongoose = require('mongoose')
+
+// Declare Authenication api
+const cookieSession = require('cookie-session');
+const passport = require('passport');
+const passportSetup = require('./config/passport-setup');
+
+
+// console.log(mongoose.model.toString())
+let bodyParser = require('body-parser')
+
+let thisUser = require('./config/passport-setup')
+
+//     // get  DB schema's
+//     //const userSchema = require('./models/user-model')
+const messageSchema = require('./models/message-model')
 
 //     // set DB models
 //    // const User = mongoose.model('User', userSchema, 'users');
-    const thisMessage = mongoose.model('message', messageSchema, 'messages')
-    
+const thisMessage = mongoose.model('message', messageSchema, 'messages')
+
 //     // export User to use in passport-setup
 //     //module.exports = User;
 //     let x = messageSchema
@@ -38,133 +53,89 @@
 //     console.log('---')
 
 
-    // connect to mongodb collections
-    mongoose.connect(keys.mongodb.dbURI, {
-        useNewUrlParser: true
-    }, function (err) {
-        if (err) throw err;
-        
-        console.log('Connected to DB');
-        
-    });
-    
-    let db = mongoose.connection;
-    
-    //console.log(db)
-    
-    db.on('error', console.error.bind(console, 'connection error:'));
-    
-    
-    
-    
-    
-    
-    
-    
-    // setup template engine
-    app.set('view engine', 'ejs');
-    app.set('views', path.join(__dirname, 'views/pages'));
-    
-    // access static file path
-    app.use(express.static('public'));
-    
-    // set cookies
-    app.use(cookieSession({
-        maxAge: 24 * 60 * 60 * 1000,
-        keys: [keys.session.cookieKey]
-    }));
-    
-    // parse application/x-www-form-urlencoded
-    app.use(bodyParser.urlencoded({
-        extended: false
-    }))
-    
-    // parse application/json
-    app.use(bodyParser.json())
-    
-    
-    
-    //initialize passport (session)
-    app.use(passport.initialize());
-    app.use(passport.session());
-    
-    app.use(cookieSession({
-        maxAge: 24 * 60 * 60 * 1000,
-        keys: [keys.session.cookieKey]
-    }));
-    
-    
-    
-    
-    
-    
-    
-    
-    // use router to handle all requests
-    app.use('/', router)
-    
-    
-    
-    
-    
-    
-    
-    
-    // setup socket.io
-    io.on('connection', function (socket) {
-        console.log('a user connected');
-        console.log(socket.id)
+// module.exports = messageSchema, thisMessage
 
-        let chatHistory = thisMessage.find({}, function(error, documents){
-            //console.log(documents)
-            socket.emit('chatHistory', documents);
-        })
+////////// CONNECT TO MONGODB //////////
+mongoose.connect(keys.mongodb.dbURI, {
+    useNewUrlParser: true
+}, function (err) {
+    if (err) throw err;
+    
+    console.log('Connected to DB');
+    
+});
 
-        socket.on('isTyping', function(data, socketid){
-            socket.emit('someoneIsTyping', data, socketid)
-        })
-    
-        socket.on('disconnect', function () {
-            console.log('user disconnected');
-        });
-        
-        socket.on('chat message', function (msg) {
-            
-            
-            if(msg!=''){   
-                let nMessage = new thisMessage({
-                    socketID: socket.id,
-                    body: msg,
-                    date: new Date()
-                    
-                })
-                //user: newUs,
-                
-                
-                nMessage.save()
-                console.log('Message Stored')
-                //
-                
-            }
+let db = mongoose.connection;
 
-            
-            io.emit('chat message', msg)
-        });
-    });
-    
-    
-    
-    
-    
+//console.log(db)
 
-
-    // listen to port`
+db.on('error', console.error.bind(console, 'connection error:'));
 
 
 
-    http.listen(port, function () {
-        console.log('PORT 3000 | http Server Started')
-    })
+
+
+
+
+////////// USE MIDDLEWARE //////////
+// setup template engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views/pages'));
+
+// access static file path
+app.use(express.static('public'));
+
+// set cookies
+app.use(cookieSession({
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [keys.session.cookieKey]
+}));
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({
+    extended: false
+}))
+
+// parse application/json
+app.use(bodyParser.json())
+
+//initialize passport (session)
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(cookieSession({
+    maxAge: 24 * 60 * 60 * 1000,
+    keys: [keys.session.cookieKey]
+}));
+
+////////// USE router FILE TO HANDLE TE REQUESTS
+app.use('/', router)
+
+
+// This export is used by the socket.io ./source file
+// module.exports = http
+console.log(typeof(socketFunction))
+socketFunction(io, thisMessage)
+// socketio(http)
+// listen to port
+http.listen(PORT, function () {
+    console.log('PORT ' + PORT + ' || http Server Started')
+})
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////
+////////////// END OF USED CODEC////////////////////
+//////////START OF COMMENT SECTION//////////////////
+////////////////////////////////////////////////////
 
 // chat
 

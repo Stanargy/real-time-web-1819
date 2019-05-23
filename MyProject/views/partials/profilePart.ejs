@@ -1,12 +1,11 @@
 
-<section>
-    <h1>Entered ProfilePart</h1>
-    <h2>Welcome To the chat </h2><h1 id="thisUsername"><%= user.username %></h1>
-    <img src="<%= user.thumbnail %>" alt="Profile picture">
-    <h3>You can start chatting right away!</h3>
+<header
+    <h2>Welcome To the chat</h2> 
     <button type=""><a href="/logout">Logout</a></button>
-</section>
-
+    <img id="profile_picture" src="<%= user.thumbnail %>" alt="Profile picture">
+    <h1 id="thisUsername"><%= user.username %></h1>
+</header>
+    
 <section>
     <ul id="messages"></ul>
     <div id="alert"></div>
