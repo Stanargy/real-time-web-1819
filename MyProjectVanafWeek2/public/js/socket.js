@@ -163,7 +163,7 @@
               coinID: coinID
             }
             socket.emit('addToFavorite', message)
-
+            
           } else {
             // delete from favorite list / checkbox: unchecked
             let message = {
@@ -171,7 +171,7 @@
               coinID: coinID
             }
             socket.emit('deleteFavorite', message)
-
+            updateFavorites()
           }
         })
       })
@@ -179,10 +179,14 @@
 
   }
 
-  // send requst to find favorites in database and use thisUser to do it
-  socket.emit('requestFavorites', thisUsername, ()=>{
-    favoriteSection.innerHTML = '';
-  })
+
+  function updateFavorites(){
+    // send requst to find favorites in database and use thisUser to do it
+    socket.emit('requestFavorites', thisUsername, ()=>{
+      favoriteSection.innerHTML = '';
+    })
+
+    // On Retrievement of favorite Selection: Add to DOM
   socket.on('newFavorite', (favorite) => {
     console.log(favorite)
     if(favorite){
@@ -194,14 +198,17 @@
       <p id="price"></p>
       </div>
       `
-
+      
     }
   })
+}
+  
 
+
+// Retrieve New Price and update DOM
   socket.on('priceSet',(res)=>{
     let price = document.querySelector('#price')
     price.innerText = JSON.stringify(res)
-
   })
 
 

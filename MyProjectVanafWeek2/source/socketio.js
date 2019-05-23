@@ -219,41 +219,53 @@ module.exports = async function socketFunction(io, thisMessage, thisAllCoins) {
                 username: `${thisUser}`
             }, (error, documents) => {
                 console.log('requestFavorites')
-                console.log('documents')
-                //console.log(documents)
+                // console.log('documents')
+                console.log(documents.favorites)
+                console.log(`\n`);
+                console.log(`\n`)
+
 
 
 
                 let thisFavorites = documents.favorites
-                thisFavorites.forEach(favorite => {
+                for (let i = 0; i < thisFavorites.length; i++) {
 
-
-
+                    console.log(thisFavorites[i])
+                    console.log(typeof (thisFavorites[i]))
                     // find correct symbol
-                    console.log('favourite individual coin:')
-                    favorite = favorite.toString()
+                    //console.log('favourite individual coin:')
 
-                    console.log(favorite)
-                    console.log(typeof (favorite))
                     // search through allCoins to find the one that has id matching the id from the user
 
-                    thisAllCoins.findById(favorite, (error, document) => {
-
-                        // send fullCoin to Client
-                        socket.emit('newFavorite', document)
+                    thisAllCoins.findById({
+                        _id: thisFavorites[i]
+                    }, (error, document) => {
                         console.log(document)
-                        console.log('-----------------------------------')
+                        if (error) {
+                            console.log(error + ' | ERROR. Could not find matching ID  during find by id: favorite-id-from-user')
+                        } else {
 
-                        let thisSymbol = document.symbol
-                        console.log(thisSymbol)
-
-                        let thisUrl = keys.api3.apiURL1 + thisSymbol + keys.api3.apiURL2 + keys.apiGraphData.apiPrefix
-                        console.log(thisUrl)
-                        setPrices(thisUrl, document.symbol)
+                            if (document != null) {
 
 
+                                let thisSymbol = document.symbol
+                                console.log(thisSymbol)
 
+                                // send fullCoin to Client
+                                socket.emit('newFavorite', document)
 
+                                // create request-url for prices
+                                let thisUrl = keys.api3.apiURL1 + thisSymbol + keys.api3.apiURL2 + keys.apiGraphData.apiPrefix
+                                // Call Price Update API request
+
+                                
+                                setPrices(thisUrl, document.symbol)
+                            } else {
+                                console.log(`No Favorites found in the Database. document = ${document}`)
+                                console.log(`\n`)
+                            }
+
+                        }
                         async function setPrices(url, symbol) {
 
                             setInterval(() => {
@@ -301,7 +313,7 @@ module.exports = async function socketFunction(io, thisMessage, thisAllCoins) {
                     //     // parse the data
                     //     body = JSON.parse(body)
                     // })
-                })
+                }
             })
         })
     });
